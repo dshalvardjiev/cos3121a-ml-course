@@ -1,0 +1,27 @@
+{
+  "_default": {
+    "sentiment": {
+      "Sentiment": "NEGATIVE",
+      "SentimentScore": {
+        "Positive": 0.01,
+        "Negative": 0.93,
+        "Neutral": 0.05,
+        "Mixed": 0.01
+      }
+    },
+    "entities": [
+      {
+        "Text": "AnyTelecom",
+        "Type": "ORGANIZATION"
+      },
+      {
+        "Text": "last Tuesday",
+        "Type": "DATE"
+      },
+      {
+        "Text": "router",
+        "Type": "COMMERCIAL_ITEM"
+      }
+    ]
+  }
+}

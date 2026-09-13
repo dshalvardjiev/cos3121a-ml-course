@@ -1,0 +1,5 @@
+{
+  "_default": "[recorded response] The customer reports that their fiber internet connection drops several times per day since last Tuesday, has already restarted the router, and is considering switching providers if it is not fixed this week. Overall sentiment: negative; urgency: high.",
+  "Summarize the following customer review in two sentences: I have b": "[recorded response] The reviewer has been a customer for three years and was happy until recent price increases and two unresolved support tickets. They now feel ignored and are actively considering competitors, though they praise the technical quality of the service itself.",
+  "Extract the following fields as JSON (product, issue_category, sen": "{\"product\": \"fiber internet\", \"issue_category\": \"connectivity/outage\", \"sentiment\": \"negative\", \"urgency\": \"high\"}"
+}

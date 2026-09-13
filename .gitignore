@@ -1,0 +1,19 @@
+# Build / editor noise
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.DS_Store
+.env
+
+# Produced in class — Session 1's demo writes data/processed, Session 2 writes models/.
+# Keeping these out of the repo is deliberate: you make them yourself.
+data/processed/
+models/
+
+# Local AWS scratch
+.aws-sam/
+
+# Instructor-only — never publish
+**/solutions/
+scripts/make_dirty.py

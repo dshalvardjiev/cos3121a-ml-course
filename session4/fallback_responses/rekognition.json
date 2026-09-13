@@ -1,0 +1,34 @@
+{
+  "product_photo.jpg": {
+    "Labels": [
+      {
+        "Name": "Shoe",
+        "Confidence": 99.1
+      },
+      {
+        "Name": "Footwear",
+        "Confidence": 99.1
+      },
+      {
+        "Name": "Sneaker",
+        "Confidence": 97.4
+      },
+      {
+        "Name": "Clothing",
+        "Confidence": 88.2
+      },
+      {
+        "Name": "Canvas",
+        "Confidence": 71.5
+      }
+    ]
+  },
+  "_default": {
+    "Labels": [
+      {
+        "Name": "Object",
+        "Confidence": 90.0
+      }
+    ]
+  }
+}
