@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Pre-flight: which AWS services can this account actually reach?
-Run before every session (AWS Academy sandboxes vary). Usage:
+Run before every session (AWS access varies). Usage:
     python scripts/check_aws_access.py [--service bedrock]
 """
 import sys

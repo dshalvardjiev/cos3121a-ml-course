@@ -1,7 +1,7 @@
 """Single place for environment-specific settings. Edit HERE, not in notebooks."""
 import os
 
-AWS_REGION = os.environ.get("COURSE_AWS_REGION", "us-east-1")   # AWS Academy: us-east-1 or us-west-2 only
+AWS_REGION = os.environ.get("COURSE_AWS_REGION", "us-east-1")   # course default region; free account plan supports SageMaker here
 S3_BUCKET = os.environ.get("COURSE_S3_BUCKET", "")               # empty -> sagemaker default bucket
 
 # Bedrock model IDs churn quarterly. Verify with:  aws bedrock list-foundation-models

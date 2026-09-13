@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Fetch course datasets into data/raw/. Every dataset has a synthetic fallback,
-so this script ALWAYS succeeds - offline, in class, or in a locked-down sandbox.
+so this script ALWAYS succeeds - offline, in class, or on a restricted network.
 
 Real sources (see project/datasets.md for licenses):
   telco_churn      Kaggle: blastchar/telco-customer-churn

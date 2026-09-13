@@ -1,4 +1,4 @@
-"""Thin AWS wrappers with a mock mode so class never blocks on the sandbox.
+"""Thin AWS wrappers with a mock mode so class never blocks on AWS.
 Everything defaults to config/course_config.py settings (region us-east-1)."""
 import json, sys
 from pathlib import Path
