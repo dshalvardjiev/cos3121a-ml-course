@@ -20,7 +20,16 @@ S1 profile & clean data ──▶ S2 train models on it ──▶ S4 deploy S2's
 | `scripts/` | Data download, defect injection, AWS access checks |
 | `config/course_config.py` | Region, bucket, Bedrock model IDs — edit here, not in notebooks |
 | `project/` | Phase 1 starter, report template, Phase 2 templates, dataset list |
-| `data/raw`, `data/processed`, `models/` | Local artifacts (git-ignored) |
+| `data/raw` | Datasets, **committed** so nothing depends on a download |
+| `data/processed`, `models/` | Produced by the notebooks, git-ignored on purpose — see WORKFLOW.md |
+
+## Start here
+New to the repository? **[WORKFLOW.md](WORKFLOW.md)** explains the two ways to run a
+notebook (Colab or local), which notebook produces the file the next one opens, and
+how your own branch works. Read it once and most confusion disappears.
+
+No setup, no problem: the Session 1 task runs in Colab with nothing installed —
+[open it here](https://colab.research.google.com/github/dshalvardjiev/cos3121a-ml-course/blob/main/session1/tasks/task_data_quality_colab.ipynb).
 
 ## Setup (local or SageMaker Studio)
 ```bash
