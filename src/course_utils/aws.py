@@ -49,6 +49,14 @@ def bedrock_chat(prompt: str, model: str | None = None,
 def detect_labels(image_path: str, min_confidence: float = 80.0) -> dict:
     if cfg.USE_MOCK_AWS:
         return _mock_response("rekognition", Path(image_path).name)
+    if not Path(image_path).exists():
+        raise FileNotFoundError(
+            f"No image at {image_path}.\n"
+            "Rekognition needs a real photograph, so none is committed to the repo "
+            "(see session4/assets/README.md). Either drop any rights-cleared product "
+            "photo in at that path, or set USE_MOCK_AWS=1 to replay the recorded "
+            "response and run the demo without AWS."
+        )
     with open(image_path, "rb") as f:
         return _client("rekognition").detect_labels(
             Image={"Bytes": f.read()}, MinConfidence=min_confidence)
@@ -75,24 +83,46 @@ def parse_comprehend(result: dict) -> dict:
 
 
 # ---------------- SageMaker deployment (Session 4) ----------------
+# The serving container ships scikit-learn but NOT xgboost, and every model in this
+# course is an XGBClassifier. SageMaker pip-installs a requirements.txt found in the
+# source directory at container start, so we ship one alongside the entry point.
+# Without it, model_fn's joblib.load raises ModuleNotFoundError and the endpoint
+# never reaches InService - with no obvious error in the notebook.
+SERVING_REQUIREMENTS = "xgboost>=2.0\nscikit-learn>=1.3\n"
+
+
 def deploy_sklearn_model(model_path: str, endpoint_name: str,
                          instance_type: str = "ml.m5.large"):
     """Deploy a local joblib model as a SageMaker real-time endpoint.
-    Uses the SKLearnModel container; entry point session4/inference.py."""
+
+    Uses the SKLearn serving container with session4/inference.py as the entry point,
+    plus a generated requirements.txt so the container can unpickle XGBoost models.
+    """
     from sagemaker.sklearn import SKLearnModel
-    import sagemaker, tarfile, tempfile, os
+    import sagemaker, tarfile, tempfile, os, shutil
     sess = sagemaker.Session()
+    # The source directory has to still exist when .deploy() packages it, so the
+    # whole deployment happens inside the temporary directory.
     with tempfile.TemporaryDirectory() as td:
         tar = os.path.join(td, "model.tar.gz")
         with tarfile.open(tar, "w:gz") as t:
             t.add(model_path, arcname="model.joblib")
         s3_uri = sess.upload_data(tar, bucket=default_bucket(), key_prefix="mlcourse/models")
-    model = SKLearnModel(model_data=s3_uri, role=sagemaker.get_execution_role(),
-                         entry_point=str(REPO_ROOT / "session4" / "inference.py"),
-                         framework_version="1.2-1")
-    predictor = model.deploy(initial_instance_count=1, instance_type=instance_type,
-                             endpoint_name=endpoint_name)
+
+        src = os.path.join(td, "serving")
+        os.makedirs(src, exist_ok=True)
+        shutil.copy(str(REPO_ROOT / "session4" / "inference.py"),
+                    os.path.join(src, "inference.py"))
+        with open(os.path.join(src, "requirements.txt"), "w") as f:
+            f.write(SERVING_REQUIREMENTS)
+
+        model = SKLearnModel(model_data=s3_uri, role=sagemaker.get_execution_role(),
+                             source_dir=src, entry_point="inference.py",
+                             framework_version="1.2-1")
+        predictor = model.deploy(initial_instance_count=1, instance_type=instance_type,
+                                 endpoint_name=endpoint_name)
     print(f"endpoint '{endpoint_name}' is deploying - this bills hourly; delete after class!")
+    print("  (first start takes ~2 min longer than you expect: the container pip-installs xgboost)")
     return predictor
 
 

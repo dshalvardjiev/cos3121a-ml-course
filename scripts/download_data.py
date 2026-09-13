@@ -7,7 +7,7 @@ Real sources (see project/datasets.md for licenses):
   bank_marketing   UCI 222: Bank Marketing
   online_retail    UCI 502: Online Retail II
   credit_default   UCI 350: Default of Credit Card Clients
-  cc_fraud         Kaggle: mlg-ulb/creditcardfraud (optional - large)
+  cc_fraud         Kaggle: mlg-ulb/creditcardfraud (large; synthetic fallback keeps the 0.17% imbalance)
 """
 from pathlib import Path
 import io, sys, zipfile
@@ -115,6 +115,24 @@ def synth_credit_default(n=6000):
     })
 
 
+def synth_cc_fraud(n=20000, positive_rate=0.0017):
+    """Same shape as the real Kaggle set: anonymised PCA components V1..V28 plus
+    Time, Amount and Class. The point of this dataset is the imbalance, so that is
+    what the fallback reproduces faithfully - roughly 0.17% positives."""
+    n_pos = max(2, int(round(n * positive_rate)))
+    cols = {f"V{i}": rng.normal(0, 1, n).round(4) for i in range(1, 29)}
+    cols["Time"] = np.sort(rng.integers(0, 172800, n))
+    cols["Amount"] = np.round(rng.lognormal(3.0, 1.2, n), 2)
+    y = np.zeros(n, dtype=int)
+    y[rng.choice(n, n_pos, replace=False)] = 1
+    # give the fraud rows a faint, learnable signature - otherwise no model can
+    # beat the majority class and the exercise teaches nothing
+    for c in ("V3", "V10", "V14"):
+        cols[c] = cols[c] + y * rng.normal(-2.2, 0.6, n).round(4)
+    cols["Class"] = y
+    return pd.DataFrame(cols)[["Time"] + [f"V{i}" for i in range(1, 29)] + ["Amount", "Class"]]
+
+
 JOBS = [
     ("telco_churn", lambda: _kaggle("blastchar/telco-customer-churn",
                                     "WA_Fn-UseC_-Telco-Customer-Churn.csv"), synth_telco),
@@ -129,6 +147,7 @@ JOBS = [
     ("credit_default", lambda: _uci_zip(
         "https://archive.ics.uci.edu/static/public/350/default+of+credit+card+clients.zip",
         lambda z: pd.read_excel(io.BytesIO(z.read(z.namelist()[0])), header=1)), synth_credit_default),
+    ("cc_fraud", lambda: _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv"), synth_cc_fraud),
 ]
 
 
@@ -144,7 +163,8 @@ def main(synthetic_only=False):
             except Exception as e:
                 print(f"  !! {name}: real download failed ({type(e).__name__}) -> synthetic fallback")
         _done(name, synth(), "(synthetic)")
-    print("done. (cc_fraud is optional/large - fetch via kagglehub mlg-ulb/creditcardfraud if wanted)")
+    print("done. Real sources are tried first; anything unreachable falls back to synthetic\n"
+          "      data with the same schema, so this script always succeeds.")
 
 
 if __name__ == "__main__":
