@@ -2,7 +2,7 @@
 Course code repository — AUBG, Fall 2026. Instructor: Dimiter Shalvardjiev.
 
 Everything used in class lives here: demo notebooks, in-class task notebooks,
-solutions, shared utilities, and the project scaffolds. Exercises build on one
+shared utilities, and the project scaffolds. Exercises build on one
 another across sessions:
 
 ```
@@ -15,9 +15,8 @@ S1 profile & clean data ──▶ S2 train models on it ──▶ S4 deploy S2's
 |---|---|
 | `session1/ … session5/` | Demo notebooks (instructor-led) per session |
 | `sessionN/tasks/` | 15-minute in-class task notebooks (students) |
-| `sessionN/solutions/` | Solutions — distributed after each session |
 | `src/course_utils/` | Shared helpers imported by every notebook |
-| `scripts/` | Data download, defect injection, AWS access checks |
+| `scripts/` | Data download and AWS access checks |
 | `config/course_config.py` | Region, bucket, Bedrock model IDs — edit here, not in notebooks |
 | `project/` | Phase 1 starter, report template, Phase 2 templates, dataset list |
 | `data/raw` | Datasets, **committed** so nothing depends on a download |
@@ -36,9 +35,8 @@ No setup, no problem: the Session 1 task runs in Colab with nothing installed �
 pip install -r requirements.txt
 pip install -e .                 # makes course_utils importable
 python scripts/download_data.py  # fetches datasets (falls back to synthetic data offline)
-python scripts/make_dirty.py     # builds the Session 1 task dataset
 ```
-On AWS: SageMaker Studio (JupyterLab), region **us-east-1** (AWS Academy restriction).
+On AWS: SageMaker Studio (JupyterLab), region **us-east-1** (course default).
 Run `python scripts/check_aws_access.py` to see which services your account can reach.
 
 ## No AWS? No problem
@@ -48,7 +46,7 @@ Every AWS demo has a local fallback:
   Comprehend calls return recorded responses from `sessionN/fallback_responses/`.
 - Session 4 deployment has a local FastAPI twin: `python session4/local_api.py`.
 
-## Cost hygiene (AWS Academy credits are finite)
+## Cost hygiene (free-tier credits are finite)
 1. **Delete endpoints after class** — they bill while idle: `course_utils.aws.delete_endpoint(name)`.
 2. Stop Studio spaces when you leave.
 3. Training jobs: smallest instance that works (`ml.m5.large` is plenty here).

@@ -62,7 +62,6 @@ Files that *are* committed and always available:
 |---|---|
 | `data/raw/*.csv` | So no in-class task ever depends on a download working |
 | `session*/tasks/` | The task notebooks |
-| `session*/solutions/` | Published as each session is delivered |
 | `src/course_utils/` | Shared helpers imported by every notebook |
 | `project/` | Phase 1 starter, report and architecture templates, dataset list |
 
