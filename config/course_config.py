@@ -21,7 +21,7 @@ BEDROCK_PRICE_PER_1M = {
     "amazon.nova-pro-v1:0": (0.80, 3.20),
 }
 
-# When true, all AWS calls (Bedrock/Rekognition/Comprehend) return recorded
+# When true, all AWS calls (Bedrock/Rekognition) return recorded
 # responses from sessionN/fallback_responses/ so the class never blocks on AWS.
 USE_MOCK_AWS = os.environ.get("USE_MOCK_AWS", "0") == "1"
 

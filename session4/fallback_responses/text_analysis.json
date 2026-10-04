@@ -1,0 +1,19 @@
+{
+  "_default": {
+    "sentiment": "NEGATIVE",
+    "entities": [
+      {
+        "Text": "AnyTelecom",
+        "Type": "ORGANIZATION"
+      },
+      {
+        "Text": "last Tuesday",
+        "Type": "DATE"
+      },
+      {
+        "Text": "router",
+        "Type": "COMMERCIAL_ITEM"
+      }
+    ]
+  }
+}

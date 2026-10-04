@@ -23,12 +23,9 @@ S1 profile & clean data ──▶ S2 train models on it ──▶ S4 deploy S2's
 | `data/processed`, `models/` | Produced by the notebooks, git-ignored on purpose — see WORKFLOW.md |
 
 ## Start here
-New to the repository? **[WORKFLOW.md](WORKFLOW.md)** explains the two ways to run a
-notebook (Colab or local), which notebook produces the file the next one opens, and
-how your own branch works. Read it once and most confusion disappears.
-
-No setup, no problem: the Session 1 task runs in Colab with nothing installed —
-[open it here](https://colab.research.google.com/github/dshalvardjiev/cos3121a-ml-course/blob/main/session1/tasks/task_data_quality_colab.ipynb).
+New to the repository? **[WORKFLOW.md](WORKFLOW.md)** explains how to set up your
+machine, which notebook produces the file the next one opens, and how your own
+branch works. Read it once and most confusion disappears.
 
 ## Setup (local or SageMaker Studio)
 ```bash
@@ -42,8 +39,8 @@ Run `python scripts/check_aws_access.py` to see which services your account can 
 ## No AWS? No problem
 Every AWS demo has a local fallback:
 - All model training runs locally (scikit-learn / XGBoost).
-- `USE_MOCK_AWS=1` (env var or `course_config.py`) makes Bedrock / Rekognition /
-  Comprehend calls return recorded responses from `sessionN/fallback_responses/`.
+- `USE_MOCK_AWS=1` (env var or `course_config.py`) makes Bedrock and Rekognition
+  calls return recorded responses from `sessionN/fallback_responses/`.
 - Session 4 deployment has a local FastAPI twin: `python session4/local_api.py`.
 
 ## Cost hygiene (free-tier credits are finite)

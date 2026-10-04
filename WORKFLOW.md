@@ -5,21 +5,8 @@ next one opens**, and **where your own work lives**. This page answers both.
 
 ---
 
-## 1. Running a notebook — two routes
+## 1. Running a notebook
 
-### Google Colab (nothing to install)
-Every in-class task has a Colab twin whose first cell clones this repository into
-the Colab session. Use it if your laptop is not set up, or if you are on a
-borrowed machine.
-
-| Session | Task | Open in Colab |
-|---|---|---|
-| 1 | Data Quality Hunt | [`session1/tasks/task_data_quality_colab.ipynb`](https://colab.research.google.com/github/dshalvardjiev/cos3121a-ml-course/blob/main/session1/tasks/task_data_quality_colab.ipynb) |
-
-Colab keeps nothing. If you want your work, use **File → Download → .ipynb**
-before you close the tab.
-
-### Your own machine (the real setup)
 ```bash
 git clone https://github.com/dshalvardjiev/cos3121a-ml-course.git
 cd cos3121a-ml-course

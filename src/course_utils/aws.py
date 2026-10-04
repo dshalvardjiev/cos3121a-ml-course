@@ -102,7 +102,7 @@ def bedrock_chat(prompt: str, model: str | None = None,
                   "stopReason": resp.get("stopReason")}
 
 
-# ---------------- Rekognition / Comprehend (Session 4) ----------------
+# ---------------- Rekognition / text analysis (Session 4) ----------------
 def detect_labels(image_path: str, min_confidence: float = 80.0) -> dict:
     if cfg.USE_MOCK_AWS:
         return _mock_response("rekognition", Path(image_path).name)
@@ -119,22 +119,35 @@ def detect_labels(image_path: str, min_confidence: float = 80.0) -> dict:
             Image={"Bytes": f.read()}, MinConfidence=min_confidence)
 
 
+ENTITY_TYPES = "ORGANIZATION, PERSON, LOCATION, DATE, COMMERCIAL_ITEM, OTHER"
+
+
 def analyze_text(text: str) -> dict:
-    """Sentiment + entities in one dict (Comprehend or mock)."""
+    """Sentiment + entities for a short text, via a Bedrock model (or recorded mock).
+
+    Amazon Comprehend does the same job, but it is not offered on the AWS free account
+    plan, so the course uses a Bedrock model instead. Returns
+    {"sentiment": "NEGATIVE", "entities": [{"Text": ..., "Type": ...}, ...]}.
+    """
     if cfg.USE_MOCK_AWS:
-        return _mock_response("comprehend", text[:60])
-    com = _client("comprehend")
-    return {
-        "sentiment": com.detect_sentiment(Text=text, LanguageCode="en"),
-        "entities": com.detect_entities(Text=text, LanguageCode="en")["Entities"],
-    }
+        return _mock_response("text_analysis", text[:60])
+    prompt = (
+        "Analyze the text below. Reply with JSON only, no other words, in this shape:\n"
+        '{"sentiment": "POSITIVE|NEGATIVE|NEUTRAL|MIXED", '
+        '"entities": [{"Text": "...", "Type": "' + ENTITY_TYPES.replace(", ", "|") + '"}]}\n\n'
+        "Text:\n" + text
+    )
+    raw = bedrock_chat(prompt, model=cfg.BEDROCK_MODEL_FAST, temperature=0.0, max_tokens=300)
+    cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Model did not return valid JSON: {raw!r}") from e
 
 
-def parse_comprehend(result: dict) -> dict:
-    s = result["sentiment"]
+def parse_analysis(result: dict) -> dict:
     return {
-        "sentiment": s["Sentiment"],
-        "confidence": round(max(s["SentimentScore"].values()), 3),
+        "sentiment": result["sentiment"],
         "entities": [(e["Text"], e["Type"]) for e in result["entities"]],
     }
 
