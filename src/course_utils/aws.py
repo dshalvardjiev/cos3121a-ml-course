@@ -22,27 +22,84 @@ def default_bucket() -> str:
 
 # ---------------- Bedrock (Session 3) ----------------
 def _mock_response(kind: str, key: str):
-    """Recorded responses used when USE_MOCK_AWS is on (or Bedrock unavailable)."""
+    """Recorded responses used when USE_MOCK_AWS is on (or Bedrock unavailable).
+    A recorded key matches when the input STARTS WITH it."""
     for f in REPO_ROOT.glob(f"session*/fallback_responses/{kind}.json"):
         bank = json.loads(f.read_text())
         if key in bank:
             return bank[key]
+        for k, v in bank.items():
+            if not k.startswith("_") and key.startswith(k):
+                return v
         return bank.get("_default", "[mock] no recorded response for this input")
     return "[mock] fallback_responses not found"
 
 
+_MOCK_TURN = {"n": 0}   # cycles through recorded variants at high temperature
+
+
+def _mock_llm(prompt: str, model: str | None, temperature: float, max_tokens: int) -> str:
+    """Replays session3/fallback_responses/llm.json.
+    Lookup order: prompt prefix -> keyword rules (_rules) -> _default.
+    An entry may be a string, a list (variants; temperature >= 0.5 cycles them),
+    or a dict {"fast": ..., "strong": ...} keyed by model tier."""
+    bank = {}
+    for f in REPO_ROOT.glob("session*/fallback_responses/llm.json"):
+        bank = json.loads(f.read_text())
+    entry = None
+    for k, v in bank.items():
+        if not k.startswith("_") and prompt.startswith(k):
+            entry = v
+            break
+    if entry is None:
+        low = prompt.lower()
+        for rule in bank.get("_rules", []):
+            if all(t.lower() in low for t in rule.get("if_all", [])) and \
+               (not rule.get("if_any") or any(t.lower() in low for t in rule["if_any"])):
+                entry = rule["response"]
+                break
+    if entry is None:
+        entry = bank.get("_default", "[mock] no recorded response for this input")
+    if isinstance(entry, dict):
+        tier = "strong" if model and model == cfg.BEDROCK_MODEL_STRONG else "fast"
+        entry = entry.get(tier) or next(iter(entry.values()))
+    if isinstance(entry, list):
+        if temperature >= 0.5:
+            _MOCK_TURN["n"] += 1
+            entry = entry[_MOCK_TURN["n"] % len(entry)]
+        else:
+            entry = entry[0]
+    words = entry.split(" ")
+    limit = max(1, int(max_tokens * 0.75))          # ~0.75 words per token
+    return " ".join(words[:limit]) if len(words) > limit else entry
+
+
 def bedrock_chat(prompt: str, model: str | None = None,
-                 temperature: float = 0.2, max_tokens: int = 500) -> str:
-    """One-call LLM chat via the Bedrock Converse API (or recorded mock)."""
+                 temperature: float = 0.2, max_tokens: int = 500,
+                 return_usage: bool = False):
+    """One-call LLM chat via the Bedrock Converse API (or recorded mock).
+    return_usage=True returns (text, {"inputTokens", "outputTokens", "stopReason"})."""
     if cfg.USE_MOCK_AWS:
-        return _mock_response("llm", prompt[:60])
+        text = _mock_llm(prompt, model, temperature, max_tokens)
+        if not return_usage:
+            return text
+        out_tok = int(len(text.split()) / 0.75)
+        usage = {"inputTokens": int(len(prompt.split()) / 0.75), "outputTokens": out_tok,
+                 "stopReason": "max_tokens" if out_tok >= max_tokens - 2 else "end_turn",
+                 "note": "mock estimate"}
+        return text, usage
     rt = _client("bedrock-runtime")
     resp = rt.converse(
         modelId=model or cfg.BEDROCK_MODEL_FAST,
         messages=[{"role": "user", "content": [{"text": prompt}]}],
         inferenceConfig={"temperature": temperature, "maxTokens": max_tokens},
     )
-    return resp["output"]["message"]["content"][0]["text"]
+    text = resp["output"]["message"]["content"][0]["text"]
+    if not return_usage:
+        return text
+    u = resp.get("usage", {})
+    return text, {"inputTokens": u.get("inputTokens"), "outputTokens": u.get("outputTokens"),
+                  "stopReason": resp.get("stopReason")}
 
 
 # ---------------- Rekognition / Comprehend (Session 4) ----------------

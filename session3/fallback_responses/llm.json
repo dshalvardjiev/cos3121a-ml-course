@@ -1,5 +1,44 @@
 {
-  "_default": "[recorded response] The customer reports that their fiber internet connection drops several times per day since last Tuesday, has already restarted the router, and is considering switching providers if it is not fixed this week. Overall sentiment: negative; urgency: high.",
-  "Summarize the following customer review in two sentences: I have b": "[recorded response] The reviewer has been a customer for three years and was happy until recent price increases and two unresolved support tickets. They now feel ignored and are actively considering competitors, though they praise the technical quality of the service itself.",
-  "Extract the following fields as JSON (product, issue_category, sen": "{\"product\": \"fiber internet\", \"issue_category\": \"connectivity/outage\", \"sentiment\": \"negative\", \"urgency\": \"high\"}"
+  "_comment": "Recorded responses for USE_MOCK_AWS=1. Keys match by prompt prefix; _rules match by keywords; entries can be a string, a list (variants, cycled at temperature >= 0.5) or {fast, strong}. Text is illustrative, written to show the same effects a live model shows.",
+  "_default": "[recorded response] No recording exists for this exact prompt. In mock mode only the course prompts have recorded answers. Run with a live Bedrock account to try your own prompts.",
+  "Summarize the following customer review in two sentences:": {
+    "fast": "[recorded: fast model] The customer has been with the company for three years but is unhappy about price increases, unresolved support tickets and daily internet drops. They plan to switch to a competitor within a month.",
+    "strong": "[recorded: strong model] A three-year customer who still rates the technical quality highly is close to leaving after two price increases, two support tickets closed without a fix and daily connection drops. They will switch within a month unless someone resolves the problem, so this is a retention risk that support can still recover."
+  },
+  "Give this customer review a 4-word title:": [
+    "Loyal Customer Nears Exit",
+    "Three Years, Now Leaving",
+    "Great Tech, Broken Support",
+    "Price Hikes Push Customer Away",
+    "Support Failures Cost Loyalty"
+  ],
+  "Write a short, polite reply e-mail to this customer:": "[recorded response] Dear valued customer, thank you for being with us for three years and for telling us plainly how this spring has gone. I am sorry that two support tickets were closed without a fix and that your connection now drops every day. I have opened a priority case with our network team, and a senior engineer will call you within 24 hours to test your line. I have also asked our billing team to review the recent price changes on your account. Kind regards, Customer Care",
+  "Extract the following fields as JSON (product, issue_category,": "{\"product\": \"internet service\", \"issue_category\": \"connectivity/outage\", \"sentiment\": \"negative\", \"urgency\": \"high\"}",
+  "_rules": [
+    {
+      "if_all": [
+        "[your improved prompt"
+      ],
+      "response": "[recorded response] Prompt B still contains the placeholder in brackets. Replace it with your own prompt, then run the cell again."
+    },
+    {
+      "if_all": [
+        "88231"
+      ],
+      "if_any": [
+        "\"issue_category\"",
+        "one of",
+        "example",
+        "schema",
+        "json"
+      ],
+      "response": "{\"product\": \"premium subscription\", \"issue_category\": \"billing\", \"sentiment\": \"negative\", \"urgency\": \"high\"}"
+    },
+    {
+      "if_all": [
+        "88231"
+      ],
+      "response": "Here is the information extracted from the message:\n\n- Product: Premium subscription upgrade (mobile app)\n- Issue category: Double charge / billing error; support chat disconnecting\n- Sentiment: Very negative (angry, threatens a bank dispute)\n- Urgency: High, wants it fixed this week\n- Order number: #88231\n- Date of charge: October 2"
+    }
+  ]
 }

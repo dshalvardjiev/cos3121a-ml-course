@@ -1,19 +1,19 @@
-"""A tiny, dependency-free grid world + tabular Q-learning for Session 3.
-(AWS DeepRacer was retired from the console in Dec 2025; running our own
-simulation is closer to how RL is actually practiced anyway.)"""
+"""A tiny, dependency-free grid world + tabular Q-learning for Session 3."""
 import numpy as np
 
-# 4x4 grid: S start, G goal(+1), H hole(end, 0), . free
+# 4x4 grid: S start, G goal(+1), H hole(end, 0), . free, B bonus tile (+bonus, game goes on)
 DEFAULT_MAP = ["S...", ".H.H", "...H", "H..G"]
+BONUS_MAP = ["SB..", ".H.H", "...H", "H..G"]   # reward-hacking demo (CoastRunners in miniature)
 ACTIONS = {0: (-1, 0), 1: (1, 0), 2: (0, -1), 3: (0, 1)}   # up down left right
 ARROWS = {0: "^", 1: "v", 2: "<", 3: ">"}
 
 
 class GridWorld:
-    def __init__(self, grid=None, step_reward: float = 0.0):
+    def __init__(self, grid=None, step_reward: float = 0.0, bonus: float = 0.1):
         self.grid = [list(r) for r in (grid or DEFAULT_MAP)]
         self.n = len(self.grid)
         self.step_reward = step_reward
+        self.bonus = bonus          # paid EVERY time the agent is on a B tile
         self.start = self._find("S")
         self.reset()
 
@@ -40,6 +40,8 @@ class GridWorld:
             return self._sid(self.pos), 1.0, True
         if cell == "H":
             return self._sid(self.pos), 0.0, True
+        if cell == "B":
+            return self._sid(self.pos), self.step_reward + self.bonus, False
         return self._sid(self.pos), self.step_reward, False
 
     def render(self):
@@ -70,13 +72,16 @@ def train_q_learning(env, episodes=2000, lr=0.1, gamma=0.95,
 
 
 def greedy_run(env, Q, max_steps=30):
-    s, done, path = env.reset(), False, [env.pos]
+    """Follow the learned policy. Returns (path, total reward, reached_goal)."""
+    s, done, path, total = env.reset(), False, [env.pos], 0.0
     for _ in range(max_steps):
         s, r, done = env.step(int(np.argmax(Q[s])))
         path.append(env.pos)
+        total += r
         if done:
-            return path, r
-    return path, 0.0
+            break
+    reached = env.grid[env.pos[0]][env.pos[1]] == "G"
+    return path, round(total, 2), reached
 
 
 def print_policy(env, Q):
