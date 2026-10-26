@@ -59,6 +59,19 @@ def clean_telco(df: pd.DataFrame) -> pd.DataFrame:
     return df.drop(columns=["customerID"], errors="ignore")
 
 
+def clean_bank(df: pd.DataFrame) -> pd.DataFrame:
+    """Phase 1 cleaning, packaged: drop duration (leak), flag + recode pdays=-1 sentinel to 999, map target."""
+    df = df.copy()
+    df = df.drop(columns=["duration"], errors="ignore") 
+    df["prev_contacted"] = (df["pdays"] != -1).astype(int)
+    df["pdays"] = df["pdays"].replace(-1, 999)
+
+    if "y" in df:
+        df["y"] = df["y"].map({"yes": 1, "no": 0}).astype(int)
+        
+    return df
+
+
 def prep_features(df: pd.DataFrame, target: str = "Churn"):
     """One-hot encode categoricals -> (X, y) ready for sklearn/XGBoost."""
     y = df[target]
